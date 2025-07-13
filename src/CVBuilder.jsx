@@ -2,6 +2,36 @@ import { useState } from "react"
 
 export default function CVBuilder() {
 
+    function WorkExpInput(props) {
+        return (
+            <div className="flex flex-wrap gap-4 text-sm" data-index={props.i}>
+                <div className="flex flex-col">
+                    <label htmlFor="company-name">Company Name*</label>
+                    <input onInput={assignWorkExperience} id="company-name" type="text" className="p-2 border-1 border-gray-200 rounded-md" required />
+                </div>
+                <div className="flex flex-col">
+                    <label htmlFor="your-role">Your Role*</label>
+                    <input onInput={assignWorkExperience} id="your-role" type="text" className="p-2 border-1 border-gray-200 rounded-md" required />
+                </div>
+                <div className="flex flex-col">
+                    <label htmlFor="start-date">Start Date*</label>
+                    <input onInput={assignWorkExperience} id="start-date" type="date" className="p-2 border-1 border-gray-200 rounded-md" required />
+                </div>
+                <div className="flex flex-col">
+                    <label htmlFor="end-date">End Date</label>
+                    <input onInput={assignWorkExperience} id="end-date" type="date" className="p-2 border-1 border-gray-200 rounded-md" />
+                </div>
+                <div className="flex flex-col w-[100%]">
+                    <label htmlFor="responsibilities">Responsibilities</label>
+                    <textarea onInput={assignWorkExperience} name="responsibilities" id="responsibilities" className="p-2 border-1 border-gray-200 rounded-md min-h-10 max-h-60"></textarea>
+                </div>
+                <button onClick={deleteWorkExperience} className="p-1 rounded-md hover:bg-red-100 transition cursor-pointer">
+                    <svg className="fill-red-800 aspect-square w-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>delete</title><path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" /></svg>
+                </button>
+            </div>
+        )
+    }
+
     function assignPersonalInfo(){
         const name = document.querySelector("#name").value;
         const email = document.querySelector("#email").value ? "Email Address: " + document.querySelector("#email").value : "";
@@ -12,8 +42,8 @@ export default function CVBuilder() {
     };
 
     function assignWorkExperience(event) {
-        const key = event.target.parentElement.parentElement.dataset.key;
-        const workExpDiv = document.querySelector(`div[data-key="${key}"]`);
+        const key = event.currentTarget.parentElement.parentElement.dataset.index;
+        const workExpDiv = document.querySelector(`div[data-index="${key}"]`);
         if (!workExpDiv) return;
 
         const companyName = workExpDiv.querySelector("#company-name").value;
@@ -21,25 +51,27 @@ export default function CVBuilder() {
         const startDate = workExpDiv.querySelector("#start-date").value;
         const endDate = workExpDiv.querySelector("#end-date").value ? " - " + document.querySelector("#end-date").value : "";
         const responsibilities = workExpDiv.querySelector("#responsibilities").value;
-
-        const workExperience = {
-            companyName,
-            yourRole,
-            startDate,
-            endDate,
-            responsibilities
-        };
         
         setWorkExpArray(prev => {
             const newArray = [...prev];
-            newArray[key] = workExperience;
+            const itemIndex = newArray.findIndex(item => item.id === key);
+            if (itemIndex !== -1) {
+              newArray[itemIndex] = {
+                ...newArray[itemIndex], // preserve id and other props
+                companyName,
+                yourRole,
+                startDate,
+                endDate,
+                responsibilities
+              };
+            }
             return newArray;
-        });
+          });
     };
 
     function deleteWorkExperience(event) {
-        const key = event.target.parentElement.dataset.key;
-        const workExpDiv = document.querySelector(`div[data-key="${key}"]`);
+        const key = event.currentTarget.parentElement.dataset.index;
+        const workExpDiv = document.querySelector(`div[data-index="${key}"]`);
         if (!workExpDiv) return;
 
         setWorkExpArray(prev => {
@@ -47,8 +79,12 @@ export default function CVBuilder() {
             newArray.splice(key, 1);
             return newArray;
         });
+    };
 
-        workExpDiv.remove();
+    function addWorkExperienceInput() {
+        setWorkExpArray(prev => [...prev, {
+            id: crypto.randomUUID()
+        }]);
     };
 
     const [personalInfo, setPersonalInfo] = useState({
@@ -111,32 +147,12 @@ export default function CVBuilder() {
                         </div>
                     </div>
 
-                    <div className="flex flex-wrap gap-4 text-sm" data-key={0}>
-                        <div className="flex flex-col">
-                            <label htmlFor="company-name">Company Name*</label>
-                            <input onInput={assignWorkExperience} id="company-name" type="text" className="p-2 border-1 border-gray-200 rounded-md" required />
-                        </div>
-                        <div className="flex flex-col">
-                            <label htmlFor="your-role">Your Role*</label>
-                            <input onInput={assignWorkExperience} id="your-role" type="text" className="p-2 border-1 border-gray-200 rounded-md" required />
-                        </div>
-                        <div className="flex flex-col">
-                            <label htmlFor="start-date">Start Date*</label>
-                            <input onInput={assignWorkExperience} id="start-date" type="date" className="p-2 border-1 border-gray-200 rounded-md" required />
-                        </div>
-                        <div className="flex flex-col">
-                            <label htmlFor="end-date">End Date</label>
-                            <input onInput={assignWorkExperience} id="end-date" type="date" className="p-2 border-1 border-gray-200 rounded-md" />
-                        </div>
-                        <div className="flex flex-col w-[100%]">
-                            <label htmlFor="responsibilities">Responsibilities</label>
-                            <textarea onInput={assignWorkExperience} name="responsibilities" id="responsibilities" className="p-2 border-1 border-gray-200 rounded-md min-h-10 max-h-60"></textarea>
-                        </div>
-                        <button onClick={deleteWorkExperience} className="p-1 rounded-md hover:bg-red-100 transition cursor-pointer">
-                            <svg className="fill-red-800 aspect-square w-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>delete</title><path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" /></svg>
-                        </button>
-                    </div>
-                    <button className="p-1 flex gap-1 rounded-md hover:bg-blue-100 transition cursor-pointer mt-4">
+                    {workExpArray.map((item) => (
+                        <WorkExpInput i={item.id} key={item.id} />
+                    ))}
+
+                    {/* Add new work experience button */}
+                    <button onClick={addWorkExperienceInput} className="p-1 flex gap-1 rounded-md hover:bg-blue-100 transition cursor-pointer mt-4">
                         <svg className="fill-blue-800 aspect-square w-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>plus</title><path d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" /></svg>
                         <p className="text-blue-800">Add new</p>
                     </button>
@@ -154,12 +170,17 @@ export default function CVBuilder() {
                 <div className="h-0.25 rounded-[100%] bg-gray-400"></div>
                 <div>
                     <h3 className="text-xl font-semibold">Work Experience</h3>
-                    <div className="mt-2" data-index={0}>
-                        <h4 className="font-semibold">{workExpArray[0]?.companyName}</h4>
-                        <p>{workExpArray[0]?.yourRole}</p>
-                        <p className="text-sm text-gray-500">{workExpArray[0]?.startDate}{workExpArray[0]?.endDate}</p>
-                        <p className="text-sm">{workExpArray[0]?.responsibilities}</p>
-                    </div>
+                    {workExpArray.map((dict, index) => {
+                        
+                        return (
+                            <div key={index} className="mt-2" data-key={index}>
+                                <h3 className="font-semibold">{dict.companyName}</h3>
+                                <p>{dict.yourRole}</p>
+                                <p className="text-sm text-gray-500">{dict.startDate} - {dict.endDate}</p>
+                                <p className="text-sm">{dict.responsibilities}</p>
+                            </div>
+                        )
+                    })}
                 </div>
             </section>
         </main>
